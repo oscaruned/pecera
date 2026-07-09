@@ -1,0 +1,12 @@
+/* Estilos básicos para la pecera */
+:root{font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial;color:#08324a}
+.aquarium-widget{width:100%;height:100%;box-sizing:border-box;display:flex;flex-direction:column;gap:12px}
+.aquarium-widget .scene{flex:1;background:transparent;border-radius:8px;overflow:hidden;min-height:0}
+.aquarium-widget button,.aquarium-controls button{padding:8px 12px;font-size:18px;border-radius:6px;border:1px solid #999;background:#fff;cursor:pointer}
+.aquarium-controls{display:flex;justify-content:center;gap:12px;align-items:center}
+.aquarium-controls button{width:52px;height:52px}
+.aquarium-widget svg{width:100%;height:100%;display:block}
+.aquarium-widget .plantLeaf{transform-origin:0 0}
+
+/* small screens */
+@media(max-width:600px){.aquarium-widget input[type=range]{width:160px};.aquarium-widget svg{height:360px}}
