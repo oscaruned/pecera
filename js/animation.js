@@ -12,10 +12,11 @@ export class Aquarium{
     this.waterRect = svg.querySelector('#waterRect')
     this.bubblesGroup = svg.querySelector('#bubbles')
     this.waves = svg.querySelector('#waves')
+    this.surfaceEl = svg.querySelector('#surface')
 
     this.audio = new AudioManager()
     this.bubbles = new Bubbles(this.bubblesGroup, this.audio)
-    this.water = new Water(this.waterEl, this.waterRect, this.waves, this.audio)
+    this.water = new Water(this.waterEl, this.waterRect, this.waves, this.surfaceEl, this.audio)
     this.fish = new Fish(this.fishG, this.bubbles, this.water)
 
     this.last = null
