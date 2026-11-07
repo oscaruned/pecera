@@ -37,6 +37,9 @@ setScore(30);       // puntos absolutos (aplica el modelo completo)
 changeScore(-10);   // ajuste relativo
 reset();            // nueva partida (pez vivo de nuevo, agua al 40%)
 
+setVolume(0.8);     // volumen general 0..1 (admite hasta 1.5)
+setMuted(true);     // silencio (equivale al botón 🔊)
+
 // compatibilidad con la versión anterior
 setWaterLevel(65);  // % de agua directo (0..100)
 changeWater(-10);   // gama relativa sobre el agua

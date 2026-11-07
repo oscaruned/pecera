@@ -86,6 +86,7 @@ export class Aquarium{
     this._updateCompanions(dt)
     this._updateEnv(dt)
     this._emit('level', this.water.level)
+    this.audio.ambientLevel?.(this.water.level)   // el murmullo sigue al agua
     this._emit('fishstate', this.fish.state)
     if(this.fish.deathDone && !this._goEmitted){
       this._goEmitted = true

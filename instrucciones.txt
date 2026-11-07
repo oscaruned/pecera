@@ -46,6 +46,8 @@ Instrucciones de integración del marcador de acuario
    - window.aquarium.setScore(puntos)       // aplica el modelo completo
    - window.aquarium.changeScore(delta)     // ajuste relativo
    - window.aquarium.reset()                // partida nueva
+   - window.aquarium.setVolume(0.8)         // volumen general 0..1
+   - window.aquarium.setMuted(true)         // silencio
    - window.aquarium.fish.happy()           // celebra
    - window.aquarium.fish.scared()          // se asusta
    - window.aquarium.fish.feed()            // alias de happy

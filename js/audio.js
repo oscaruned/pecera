@@ -37,23 +37,78 @@ export class AudioManager{
 
   _ambientOn(){
     if(!this.ctx || this._ambient) return
-    // burbujeo ambiental suave: ruido filtrado muy grave
-    const len = this.ctx.sampleRate * 2
-    const buf = this.ctx.createBuffer(1, len, this.ctx.sampleRate)
+    const AC = this.ctx
+
+    // ruido rosado (energía baja en agudos: mucho más natural que el blanco)
+    const len = AC.sampleRate * 3
+    const buf = AC.createBuffer(1, len, AC.sampleRate)
     const d = buf.getChannelData(0)
-    for(let i=0;i<len;i++) d[i] = (Math.random()*2-1) * 0.15
-    const src = this.ctx.createBufferSource()
-    src.buffer = buf; src.loop = true
-    const lp = this.ctx.createBiquadFilter()
-    lp.type = 'lowpass'; lp.frequency.value = 320
-    const g = this.ctx.createGain()
-    g.gain.value = 0.015
-    const lfo = this.ctx.createOscillator(); lfo.frequency.value = 0.08
-    const lg = this.ctx.createGain(); lg.gain.value = 0.006
-    lfo.connect(lg); lg.connect(g.gain)
-    src.connect(lp); lp.connect(g); g.connect(this.master)
-    src.start(); lfo.start()
-    this._ambient = { src, g, lfo }
+    let b0 = 0, b1 = 0, b2 = 0
+    for(let i = 0; i < len; i++){
+      const w = Math.random() * 2 - 1
+      b0 = 0.997 * b0 + w * 0.029
+      b1 = 0.985 * b1 + w * 0.042
+      b2 = 0.950 * b2 + w * 0.099
+      d[i] = b0 + b1 + b2
+    }
+
+    // capa de ruido loopeado con filtro ondulante y deriva estéreo
+    const layer = (type, freq, q, gain, pan0) => {
+      const src = AC.createBufferSource()
+      src.buffer = buf; src.loop = true
+      const f = AC.createBiquadFilter()
+      f.type = type; f.frequency.value = freq; f.Q.value = q
+      // "corriente": el centro del filtro flota lentamente
+      const fLfo = AC.createOscillator(); fLfo.frequency.value = 0.05 + Math.random() * 0.07
+      const fAmt = AC.createGain(); fAmt.gain.value = freq * 0.35
+      fLfo.connect(fAmt); fAmt.connect(f.frequency)
+      const g = AC.createGain(); g.gain.value = gain
+      const pan = AC.createStereoPanner(); pan.pan.value = pan0
+      // deriva suave de izquierda a derecha
+      const pLfo = AC.createOscillator(); pLfo.frequency.value = 0.03 + Math.random() * 0.04
+      const pAmt = AC.createGain(); pAmt.gain.value = 0.3
+      pLfo.connect(pAmt); pAmt.connect(pan.pan)
+      src.connect(f); f.connect(g); g.connect(pan); pan.connect(this.master)
+      src.start(); fLfo.start(); pLfo.start()
+      return { g, gain }
+    }
+
+    // tres capas: motor del filtro, lavado medio y brillo de superficie
+    const rumble  = layer('lowpass',  170, 0.5, 0.045, 0)
+    const wash    = layer('bandpass', 620, 0.9, 0.030, -0.5)
+    const shimmer = layer('bandpass', 1500, 1.4, 0.013, 0.5)
+    this._ambient = [rumble, wash, shimmer]
+    this._ambientBand = Math.round((this._levelHint ?? 40) / 10)
+    // nacen ya con la intensidad que toca al nivel actual del agua
+    const k0 = 0.55 + this._ambientBand / 14
+    this._ambient.forEach(l => { l.g.gain.value = l.gain * k0 })
+
+    this._scheduleBubble()
+  }
+
+  // actividad esporádica de burbujeo, como en un acuario de verdad
+  _scheduleBubble(){
+    if(this._bubbleTimer) clearTimeout(this._bubbleTimer)
+    this._bubbleTimer = setTimeout(() => {
+      if(!this.ctx){ return }
+      // racimo de 1 a 3 burbujas seguidas
+      const n = 1 + Math.floor(Math.random() * 3)
+      for(let i = 0; i < n; i++) this.bubble(4 + Math.random() * 10, i * 0.12)
+      this._scheduleBubble()
+    }, 2200 + Math.random() * 5200)
+  }
+
+  // da vida al murmullo según el nivel del agua (más lleno = más corriente)
+  ambientLevel(level){
+    this._levelHint = level
+    if(!this._ambient) return
+    const band = Math.round(level / 10)
+    if(this._ambientBand === band) return
+    this._ambientBand = band
+    const k = 0.55 + band / 14                    // agua alta suena más viva
+    this._ambient.forEach((l, i) => {
+      l.g.gain.setTargetAtTime(l.gain * k, this.ctx.currentTime, 1.2)
+    })
   }
 
   setMuted(m){
@@ -99,10 +154,10 @@ export class AudioManager{
   }
 
   // --- eventos del juego ----------------------------------------------------
-  bubble(size=6){
+  bubble(size=6, delay=0){
     if(!this.ctx) return
     const p = Math.min(1, 8/size)          // burbujas pequeñas = tono más agudo
-    this._tone(500 + p*700, 0.08, { type: 'sine', vol: 0.12 + p*0.10, slide: 260 })
+    this._tone(500 + p*700, 0.08, { type: 'sine', vol: 0.12 + p*0.10, slide: 260, delay })
   }
 
   splash(){
