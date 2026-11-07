@@ -115,21 +115,19 @@ export class Aquarium{
 
   // ------------------------------------------------------------- puntuación
   setScore(score){
+    // partida terminada: el marcador queda congelado hasta reset()
+    if(this.fish.dying || this.score <= THRESHOLDS.death) return
+
     const prev = this.score
-    const died = prev <= THRESHOLDS.death
     this.score = Math.round(score)
     const bandPrev = scoreToLevel(prev)
     const level = scoreToLevel(this.score)
     this.water.setLevel(level)
 
-    if(died || this.fish.dying) return   // sin reacciones en partida terminada
-
     // muerte por ahogamiento
     if(this.score <= THRESHOLDS.death){
-      if(!this.fish.dying){
-        this.fish.die()
-        this.audio.dead()
-      }
+      this.fish.die()
+      this.audio.dead()
       return
     }
 

@@ -25,6 +25,8 @@ molde el estado de la partida con el nivel del agua.
 
 - De −20 a 0 el agua sube 2%/punto (el peligro se ve de cerca).
 - De 0 a +80 sube 0,75%/punto.
+- Al llegar a −20 el pez muere y el marcador queda congelado hasta `reset()`
+  (una partida terminada no reacciona a más puntuaciones).
 - Por encima de +80 el agua ya no sube; cada hito pbis da vida: peces
   acompañantes (cada +60, máx. 4), crecimiento dorado (+120/+200) y corona (+280).
 - Los hitos son reversibles: si la puntuación cae, el cardumen y la evolución

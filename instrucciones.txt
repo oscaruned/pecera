@@ -39,6 +39,10 @@ Instrucciones de integración del marcador de acuario
    acompañantes (cada +60 puntos, máximo 4). Si la puntuación baja, esos
    hitos se pierden. Un número grande de puntos acompaña al tanque.
 
+   Al llegar a −20 el pez muere y el widget queda congelado (el marcador no
+   reacciona a más puntuaciones) hasta que se llame a reset() o el usuario
+   pulse "Jugar otra vez".
+
 5. Controlar el marcador desde JavaScript
 
    El script crea `window.aquarium` al cargar la página:

@@ -352,6 +352,11 @@ export class Fish{
     const p = this.parts
     if(p.deadEyes) p.deadEyes.setAttribute('opacity', '0')
     if(p.crown) p.crown.setAttribute('opacity', '0')
+    // restaurar boca y aletas (restos de la muerte)
+    if(p.mouthO){ p.mouthO.setAttribute('rx', '0'); p.mouthO.setAttribute('ry', '0'); p.mouthO.setAttribute('opacity', '0') }
+    if(p.mouthArc){ p.mouthArc.setAttribute('opacity', '1'); p.mouthArc.setAttribute('d', 'M 45,9 Q 51,15 57,9') }
+    if(p.tail) p.tail.setAttribute('transform', 'rotate(0 -44 0)')
+    if(p.fin) p.fin.setAttribute('transform', 'rotate(0 6 12)')
     this.state = 'feliz'
     this.dp = this._pickPoint()
     this._applySwimTransform()
