@@ -1,113 +1,84 @@
-Instrucciones de integración de la pecera
+Instrucciones de integración del marcador de acuario
 
-1. Copia los archivos necesarios a tu proyecto web
+1. Copia los archivos a tu proyecto web
 
-   Debes copiar la carpeta `js/` completa y los ficheros de estilo si quieres usar los estilos existentes.
    - js/app.js
    - js/animation.js
    - js/fish.js
+   - js/scene.js
    - js/water.js
    - js/bubbles.js
    - js/audio.js
    - style.css
 
-2. Añade el contenedor de la pecera en tu HTML
+   La pecera se crea por código (no necesita SVG en el HTML): sólo se
+   necesita un contenedor con id `aquarium-root`.
 
-   Dentro de tu página HTML, coloca un elemento de contenedor con el id `aquarium-root` donde quieras que aparezca la pecera.
+2. Contenedor HTML
 
-   Ejemplo mínimo:
+   <div id="aquarium-root" style="width:100%;max-width:760px;height:460px"></div>
 
-   <div id="aquarium-root" style="width:100%;max-width:720px;height:420px;margin:24px auto;min-height:320px"></div>
+   Si el contenedor no existe, el widget se crea dentro de document.body.
 
-   Si no incluyes `#aquarium-root`, el script creará la pecera dentro de `document.body`.
-
-3. Añade los botones de control (opcional)
-
-   Para controlar el nivel de agua con botones + y - añade esto en tu HTML:
-
-   <div class="aquarium-controls" style="display:flex;justify-content:center;gap:16px;margin-top:16px">
-     <button id="minus">-</button>
-     <button id="plus">+</button>
-   </div>
-
-   El script ya está preparado para enlazar esos botones de forma automática.
-
-4. Incluye los archivos CSS y JavaScript
-
-   En el `head` de tu HTML, enlaza `style.css`:
+3. Carga los estilos y el módulo
 
    <link rel="stylesheet" href="style.css">
-
-   Justo antes de `</body>`, añade el script principal como módulo:
-
+   ...
    <script type="module" src="js/app.js"></script>
 
-   Asegúrate de que la ruta `js/app.js` es correcta desde la ubicación de tu HTML.
+   Ajusta las rutas según tu estructura. app.js es un ES módulo.
 
-5. Estructura recomendada del HTML completo
+4. Modelo de puntuación
 
-   <!doctype html>
-   <html lang="es">
-   <head>
-     <meta charset="utf-8">
-     <meta name="viewport" content="width=device-width,initial-scale=1">
-     <title>Tu página con pecera</title>
-     <link rel="stylesheet" href="style.css">
-   </head>
-   <body>
-     <div id="aquarium-root" style="width:100%;max-width:720px;height:420px;margin:24px auto;min-height:320px"></div>
-     <div class="aquarium-controls" style="display:flex;justify-content:center;gap:16px;margin-top:16px">
-       <button id="minus">-</button>
-       <button id="plus">+</button>
-     </div>
-     <script type="module" src="js/app.js"></script>
-   </body>
-   </html>
+   Puntuación  -20  → agua 0%   (el pez muere: fin del juego)
+   Puntuación    0  → agua 40%  (partida sana)
+   Puntuación  +80  → agua 100% (el agua satura)
 
-6. Cómo controlar la pecera desde JavaScript
+   Al superar +80 la puntuación sigue creciendo de forma visible: el pez
+   evoluciona (dorado, más grande, corona a +280) y aparecen peces
+   acompañantes (cada +60 puntos, máximo 4). Si la puntuación baja, esos
+   hitos se pierden. Un número grande de puntos acompaña al tanque.
 
-   El script crea un objeto global `window.aquarium` cuando la página carga.
-   Puedes usarlo desde cualquier otro script después de la carga de la página.
+5. Controlar el marcador desde JavaScript
 
-   Ejemplos:
+   El script crea `window.aquarium` al cargar la página:
 
-   - Cambiar el nivel de agua directamente:
-     window.aquarium.setWaterLevel(60)
+   - window.aquarium.setScore(puntos)       // aplica el modelo completo
+   - window.aquarium.changeScore(delta)     // ajuste relativo
+   - window.aquarium.reset()                // partida nueva
+   - window.aquarium.fish.happy()           // celebra
+   - window.aquarium.fish.scared()          // se asusta
+   - window.aquarium.fish.feed()            // alias de happy
 
-   - Subir o bajar el agua:
-     window.aquarium.changeWater(5)
-     window.aquarium.changeWater(-5)
+   Compatibilidad con la versión anterior (agua directa):
 
-   - Usar la pecera como indicador de puntuación:
-     window.aquarium.setScore(puntos, maxPuntos)
-     // Ajusta el nivel de agua según la puntuación
+   - window.aquarium.setWaterLevel(65)
+   - window.aquarium.changeWater(-10)
 
-   - Controlar el pez:
-     window.aquarium.fish.feed()
-     window.aquarium.fish.die()
-     window.aquarium.fish.happy()
-     window.aquarium.fish.scared()
+   Eventos (window.aquariumInstance):
 
-7. Integración en otro proyecto existente
+   - .on('level', nivel => ...)             // 0..100 en cada frame
+   - .on('fishstate', estado => ...)        // feliz, preocupado, boquea,
+                                            // cae, asustado, muerto
+   - .on('milestone', m => ...)             // {kind:'tier'|'companion', value}
+   - .on('gameover', puntuacion => ...)     // al ahogarse el pez
 
-   - Copia la carpeta `js/` y `style.css` a la carpeta pública de tu proyecto.
-   - Ajusta las rutas en el HTML si tu estructura es diferente.
-   - Coloca `#aquarium-root` en el lugar donde quieras mostrar la pecera.
-   - Si tu proyecto usa un gestor de rutas o build, asegúrate de que el archivo `js/app.js` se sirve como ES módulo.
+6. Ejemplo con un juego
 
-8. Consejos prácticos
+   // al terminar una ronda
+   window.aquarium.setScore(score);
 
-   - Si tu página ya tiene CSS global, puedes eliminar o ajustar el `style.css` para que no interfiera con otros estilos.
-   - Si quieres ocultar los botones, simplemente no incluyas el bloque de controles y usa la API `window.aquarium` desde tu propio código.
-   - Para integrarlo como widget en una página de juego, añade solo el `div#aquarium-root` y el script; los controles pueden quedar en otra parte de tu interfaz.
+   // al perder una vida
+   window.aquarium.changeScore(-5);
 
-9. Ejemplo rápido para un juego
+   // al terminar la partida
+   window.aquarium.on('gameover', finalScore => mostrarPantalla(finalScore));
 
-   1. Añade el contenedor de la pecera.
-   2. Carga `style.css` y `js/app.js`.
-   3. Cuando actualices la puntuación del juego, llama:
-      window.aquarium.setScore(score, maxScore)
+7. Consejos
 
-   De esa forma el agua sube o baja según la puntuación sin añadir más elementos HTML.
-
-Fin de las instrucciones.
+   - Si tu página ya tiene CSS general, puedes ajustar style.css para que
+     no interfiera.
+   - El sonido se inicializa en el primer gesto del usuario (políticas de
+     autoplay) y se silencia con el botón 🔊 o audio.setMuted(true).
+   - Si quieres ocultar los controles de la demo, no añadas los botones;
+     la API sigue funcionando.
