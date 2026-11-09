@@ -16,6 +16,7 @@
       <div class="infobox">
         <div>Agua: <span id="level" aria-live="polite">40%</span></div>
         <div>Pez: <span id="fishState" aria-live="polite">😊 feliz</span></div>
+        <div id="idleClock" title="Tiempo sin nueva palabra">⏱ <span id="idleTime">0:00</span> / 1:00</div>
         <div id="milestoneFlash" class="flash"></div>
       </div>
     </header>
@@ -27,6 +28,7 @@
       <button data-delta="-1" title="-1 punto">−1</button>
       <button data-delta="1" class="good" title="+1 punto">+1</button>
       <button data-delta="10" class="good" title="+10 puntos">+10</button>
+      <button id="newWord" class="ghost" title="Palabra nueva: el contador vuelve a cero">🗣️ Palabra</button>
       <button id="restart" class="ghost" title="Reiniciar partida">Reiniciar</button>
       <button id="mute" class="ghost" title="Silenciar">🔊</button>
     </section>
@@ -42,6 +44,7 @@
 
     <footer class="hint">
       El agua sube con los puntos y baja con los fallos. A −20 el pez muere y el juego termina.
+      El contador se pone a cero con cada palabra nueva y se para al terminar la partida.
     </footer>
   </main>
   <script type="module" src="js/app.js"></script>

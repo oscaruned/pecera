@@ -44,6 +44,15 @@ export class Aquarium{
     this._lastScore = 0
     this._lastCrossBand = 40
 
+    // reloj de inactividad: punto sin responder nuevos (resetea a cero con cada
+    // palabra nueva y se para al terminar la partida)
+    this.idleMax = 60            // segundos de gracia
+    this.idle = 0                // segundos transcurridos desde la última palabra
+    this.idleRunning = true
+    this.idlePenalty = 0         // puntos que el widget resta en el minuto (0 = solo evento)
+    this.idleFired = false
+    this._idleSec = 0
+
     // animación de ambiente (rayos, caústicas, plantas)
     this._envT = 0
     this._plPhase = Math.random() * 6
@@ -85,6 +94,7 @@ export class Aquarium{
     this.bubbles.update(dt)
     this._updateCompanions(dt)
     this._updateEnv(dt)
+    this._updateIdle(dt)
     this._emit('level', this.water.level)
     this.audio.ambientLevel?.(this.water.level)   // el murmullo sigue al agua
     this._emit('fishstate', this.fish.state)
@@ -113,6 +123,43 @@ export class Aquarium{
     })
   }
 
+  // ----------------------------------------------------------------- reloj de inactividad
+  // El juego lo alimenta con word() en cada palabra nueva; llega al minuto
+  // sin palabras -> evento 'idle' (+ penalización opcional) y se queda parado
+  // hasta la siguiente palabra o reset. Al morir el pez queda detenido y ya
+  // no vuelve a andar salvo con reset().
+  _updateIdle(dt){
+    if(!this.idleRunning || this.fish.dying || this.score <= THRESHOLDS.death) return
+    this.idle += dt
+    if(this.idle >= this.idleMax && !this.idleFired){
+      this.idleFired = true
+      this.idleRunning = false
+      this.audio.scoreDown()
+      this._emit('idle', { max: this.idleMax })
+      if(this.idlePenalty > 0) this.setScore(this.score - this.idlePenalty)
+      return
+    }
+    const s = Math.floor(this.idle)
+    if(s !== this._idleSec){
+      this._idleSec = s
+      this._emit('idleTick', { elapsed: s, max: this.idleMax })
+    }
+  }
+
+  // con cada palabra nueva el contador vuelve a cero
+  word(){
+    this.idle = 0
+    this._idleSec = 0
+    this.idleFired = false
+    if(!this.fish.dying && this.score > THRESHOLDS.death) this.idleRunning = true
+    this._emit('idleTick', { elapsed: 0, max: this.idleMax })
+  }
+
+  setIdleClock(opts = {}){
+    if(opts.seconds != null) this.idleMax = Math.max(5, Number(opts.seconds))
+    if(opts.penalty != null) this.idlePenalty = Math.max(0, Number(opts.penalty))
+  }
+
   // ------------------------------------------------------------- puntuación
   setScore(score){
     // partida terminada: el marcador queda congelado hasta reset()
@@ -128,6 +175,8 @@ export class Aquarium{
     if(this.score <= THRESHOLDS.death){
       this.fish.die()
       this.audio.dead()
+      this.idleRunning = false               // partida terminada: contador parado
+      this._emit('idleTick', { elapsed: -1, max: this.idleMax })  // aviso de "detenido"
       return
     }
 
@@ -215,6 +264,12 @@ export class Aquarium{
     this.companions.length = 0
     this.water.setLevel(scoreToLevel(0))
     this.audio.restart()
+    // reloj a cero y andando de nuevo
+    this.idle = 0
+    this._idleSec = 0
+    this.idleFired = false
+    this.idleRunning = true
+    this._emit('idleTick', { elapsed: 0, max: this.idleMax })
     this._emit('level', this.water.level)
   }
 }

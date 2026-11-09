@@ -52,6 +52,24 @@ Instrucciones de integración del marcador de acuario
    - window.aquarium.reset()                // partida nueva
    - window.aquarium.setVolume(0.8)         // volumen general 0..1
    - window.aquarium.setMuted(true)         // silencio
+
+   Reloj de "minuto sin responder":
+
+   - window.aquarium.word()                 // CON CADA palabra nueva: el
+                                            // contador vuelve a cero y sigue
+                                            // andando (despierta si estaba
+                                            // detenido por el minuto cumplido)
+   - window.aquarium.setIdleClock({         // configuración (opcional)
+       seconds: 60,                         //   segundos de gracia (min 5)
+       penalty: 5 })                        //   puntos que resta al llegar al
+                                            //   minuto (0 = solo avisa)
+
+   - Si el minuto se cumple, el widget dispara el evento 'idle' y se detiene
+     hasta la siguiente palabra (una única vez por palabra perdida).
+   - Al terminar la partida (agua a 0 / pez muerto) el contador queda parado
+     de forma definitiva; solo reset() o "Jugar otra vez" lo reactiva.
+   - Evento 'idleTick' cada segundo con { elapsed, max } para pintar un
+     contador en tu juego si lo quieres ahí en vez de en el widget.
    - window.aquarium.fish.happy()           // celebra
    - window.aquarium.fish.scared()          // se asusta
    - window.aquarium.fish.feed()            // alias de happy

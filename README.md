@@ -42,6 +42,10 @@ reset();            // nueva partida (pez vivo de nuevo, agua al 40%)
 setVolume(0.8);     // volumen general 0..1 (admite hasta 1.5)
 setMuted(true);     // silencio (equivale al botón 🔊)
 
+word();             // ← llamar con CADA palabra nueva: el contador de
+                    //   "minuto sin responder" vuelve a cero
+setIdleClock({ seconds: 60, penalty: 0 });  // duración y penalización opcional
+
 // compatibilidad con la versión anterior
 setWaterLevel(65);  // % de agua directo (0..100)
 changeWater(-10);   // gama relativa sobre el agua
@@ -49,7 +53,8 @@ fish.happy(); fish.scared(); fish.feed(); // reacciones manuales
 ```
 
 Eventos del orquestador (`window.aquariumInstance.on('evento', fn)`):
-`level`, `fishstate`, `milestone`, `gameover`.
+`level`, `fishstate`, `milestone`, `gameover`, `idle` (minuto sin responder),
+`idleTick` (cada segundo: `{elapsed, max}`).
 
 ## Rendimiento
 

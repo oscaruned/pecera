@@ -41,6 +41,10 @@ body{
 }
 .infobox{ font-size: 13px; color: #38668a; text-align: right }
 .infobox > div{ margin-top: 2px }
+/* contador de minuto sin responder */
+#idleClock{ font-variant-numeric: tabular-nums }
+#idleClock.urgent{ color: #b13b1e; font-weight: 700 }
+#idleClock.stopped{ opacity: 0.55 }
 .flash{
   font-weight: 700; color: #cf8a00;
   opacity: 0; transform: translateY(4px);
